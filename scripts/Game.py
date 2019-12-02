@@ -15,8 +15,8 @@ class Game:
         self.name = name
         self.play_rect = None
         self.description = VerticalScroller((0, 0))
-        if not isfile(name + "/Readme"):
-            with open(name + "/Readme", "w+") as file:
+        if not isfile(name + "/readme"):
+            with open(name + "/readme", "w+") as file:
                 file.write("No Description Provided")
 
     def get_display(self, dim, font):
@@ -49,7 +49,7 @@ class Game:
         font = get_scaled_font(dim[0], line_h, "|", "Times New Roman")
         # Split the lines into paragraphs (new line denoted by '  ')
         paragraphs = []
-        with open(self.name + "/README", 'r') as file:
+        with open(self.name + "/readme", 'r') as file:
             file_text = "".join(file)
             while "\n" in file_text:
                 idx = file_text.index("\n")

@@ -1,7 +1,7 @@
 Sandbox Game  Author: Aaron Orenstein
     This is a simple sandbox game where you can run around,
-  \iSandbox/res/item_icons/test_sword.png fight a couple monsters,
-  \iSandbox/res/item_icons/test_pickaxe.png mine some blocks,
-  \iSandbox/res/item_icons/dirt.png build a little,
+  \iSandbox/res/inventory_icons/test_sword.png fight a couple monsters,
+  \iSandbox/res/inventory_icons/test_pickaxe.png mine some blocks,
+  \iSandbox/res/inventory_icons/dirt.png build a little,
   and even travel to different worlds!
     WASD to move around.
