@@ -15,6 +15,9 @@ class Game:
         self.name = name
         self.play_rect = None
         self.description = VerticalScroller((0, 0))
+        if not isfile(name + "/Readme"):
+            with open(name + "/Readme", "w+") as file:
+                file.write("No Description Provided")
 
     def get_display(self, dim, font):
         s = Surface(dim)
@@ -43,66 +46,65 @@ class Game:
 
         line_h = max(10, int(dim[1] / 20))
 
-        if isfile(self.name + "/README"):
-            font = get_scaled_font(dim[0], line_h, "|", "Times New Roman")
-            # Split the lines into paragraphs (new line denoted by '  ')
-            paragraphs = []
-            with open(self.name + "/README", 'r') as file:
-                file_text = "".join(file)
-                while "\n" in file_text:
-                    idx = file_text.index("\n")
-                    file_text = file_text[:idx] + " " + file_text[idx + 1:]
-                while "  " in file_text:
-                    idx = file_text.index("  ")
-                    paragraphs.append(file_text[:idx])
-                    file_text = file_text[idx + 2:]
-                if file_text != "":
-                    paragraphs.append(file_text)
-            # Split the paragraphs into lines
-            for p in paragraphs:
-                lines = wrap_text(p, font, dim[0], line_h)
-                for line in lines:
-                    w = 0
-                    displays = []
-                    while "\\i" in line:
-                        # Check for any images
-                        idx = line.index("\\i")
-                        # Draw up to that image
-                        text = font.render(line[:idx], 1, (255, 255, 255))
-                        displays.append(text)
-                        w += font.size(line[:idx])[0]
-                        line = line[idx + 2:]
-                        # Get image and draw it if it exists
-                        if " " in line:
-                            idx2 = line.index(" ")
-                            img = line[:idx2]
-                            line = line[idx2:]
-                        else:
-                            img = line
-                            line = ""
-                        if isfile(img):
-                            img = load(img)
-                        else:
-                            img = Surface((line_h, line_h))
-                        # Scale the image
-                        size = img.get_size()
-                        frac = line_h / max(size)
-                        img = scale(img, (int(frac * size[0]), int(frac * size[1])))
-                        displays.append(img)
-                        w += line_h
-                    if line != "":
-                        text = font.render(line, 1, (255, 255, 255))
-                        displays.append(text)
-                        w += font.size(line)[0]
-                    # Draw this line onto a surface
-                    s = Surface((w, line_h))
-                    x = 0
-                    for piece in displays:
-                        piece_dim = piece.get_size()
-                        s.blit(piece, (x, int((line_h - piece_dim[1]) / 2)))
-                        x += piece_dim[0]
-                    # Add surface to scroller
-                    self.description.add_item(s, "")
+        font = get_scaled_font(dim[0], line_h, "|", "Times New Roman")
+        # Split the lines into paragraphs (new line denoted by '  ')
+        paragraphs = []
+        with open(self.name + "/README", 'r') as file:
+            file_text = "".join(file)
+            while "\n" in file_text:
+                idx = file_text.index("\n")
+                file_text = file_text[:idx] + " " + file_text[idx + 1:]
+            while "  " in file_text:
+                idx = file_text.index("  ")
+                paragraphs.append(file_text[:idx])
+                file_text = file_text[idx + 2:]
+            if file_text != "":
+                paragraphs.append(file_text)
+        # Split the paragraphs into lines
+        for p in paragraphs:
+            lines = wrap_text(p, font, dim[0], line_h)
+            for line in lines:
+                w = 0
+                displays = []
+                while "\\i" in line:
+                    # Check for any images
+                    idx = line.index("\\i")
+                    # Draw up to that image
+                    text = font.render(line[:idx], 1, (255, 255, 255))
+                    displays.append(text)
+                    w += font.size(line[:idx])[0]
+                    line = line[idx + 2:]
+                    # Get image and draw it if it exists
+                    if " " in line:
+                        idx2 = line.index(" ")
+                        img = line[:idx2]
+                        line = line[idx2:]
+                    else:
+                        img = line
+                        line = ""
+                    if isfile(img):
+                        img = load(img)
+                    else:
+                        img = Surface((line_h, line_h))
+                    # Scale the image
+                    size = img.get_size()
+                    frac = line_h / max(size)
+                    img = scale(img, (int(frac * size[0]), int(frac * size[1])))
+                    displays.append(img)
+                    w += line_h
+                if line != "":
+                    text = font.render(line, 1, (255, 255, 255))
+                    displays.append(text)
+                    w += font.size(line)[0]
+                # Draw this line onto a surface
+                s = Surface((w, line_h))
+                x = 0
+                for piece in displays:
+                    piece_dim = piece.get_size()
+                    s.blit(piece, (x, int((line_h - piece_dim[1]) / 2)))
+                    x += piece_dim[0]
+                # Add surface to scroller
+                self.description.add_item(s, "")
         # Draw the play button
         w, h = dim[0] * .8, line_h * 3
         s = Surface((w, h))
