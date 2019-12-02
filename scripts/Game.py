@@ -63,39 +63,30 @@ class Game:
         # Split the paragraphs into lines
         for p in paragraphs:
             lines = wrap_text(p, font, dim[0], line_h)
+            # Go through each word in each line
             for line in lines:
                 w = 0
                 displays = []
-                while "\\i" in line:
-                    # Check for any images
-                    idx = line.index("\\i")
-                    # Draw up to that image
-                    text = font.render(line[:idx], 1, (255, 255, 255))
-                    displays.append(text)
-                    w += font.size(line[:idx])[0]
-                    line = line[idx + 2:]
-                    # Get image and draw it if it exists
-                    if " " in line:
-                        idx2 = line.index(" ")
-                        img = line[:idx2]
-                        line = line[idx2:]
+                for word in line:
+                    if "\\i" not in word:
+                        # Draw it if it is a word
+                        text = font.render(word, 1, (255, 255, 255))
+                        displays.append(text)
+                        w += font.size(word)[0]
                     else:
-                        img = line
-                        line = ""
-                    if isfile(img):
-                        img = load(img)
-                    else:
-                        img = Surface((line_h, line_h))
-                    # Scale the image
-                    size = img.get_size()
-                    frac = line_h / max(size)
-                    img = scale(img, (int(frac * size[0]), int(frac * size[1])))
-                    displays.append(img)
-                    w += line_h
-                if line != "":
-                    text = font.render(line, 1, (255, 255, 255))
-                    displays.append(text)
-                    w += font.size(line)[0]
+                        # Otherwise get image and draw it if it exists
+                        # Ignore any spaces with "\" in front
+                        img = word[2:]
+                        if isfile(img):
+                            img = load(img)
+                        else:
+                            img = Surface((line_h, line_h))
+                        # Scale the image
+                        size = img.get_size()
+                        frac = line_h / max(size)
+                        img = scale(img, (int(frac * size[0]), int(frac * size[1])))
+                        displays.append(img)
+                        w += line_h
                 # Draw this line onto a surface
                 s = Surface((w, line_h))
                 x = 0
@@ -137,47 +128,57 @@ def wrap_string(string, font, w):
 # Divides text into words with ' ' delimiter
 def wrap_text(string, font, w, img_w):
     words = []
+    word = ""
+    # Split into words, ignoring "\ "
     while string.count(" ") > 0:
         idx = string.index(" ")
-        words.append(string[:idx + 1])
+        if idx == 0 or string[idx - 1] != "\\":
+            words.append(word + string[:idx + 1])
+            word = ""
+        else:
+            word += string[:idx - 1] + " "
         string = string[idx + 1:]
     words.append(string)
+    # Stores a 2d array of words
     strs = []
-    line = ""
+    # Stores each line in an array of words
+    line = []
     i = 0
     # Go through each word
     img_count = 0
     line_w = 0
+    was_img = False
     while i < len(words):
         word = words[i]
         # Check if our word is an image
         is_img = "\i" in word
+        # Add a space if the word is after an image
+        if not is_img and was_img:
+            word = " " + word
+        was_img = is_img
         # Get word width
         word_w = img_w if is_img else font.size(word)[0]
         # If it fits, go to the next word
         if line_w + word_w < w:
-            line += word
+            line.append(word)
             line_w += word_w
             i += 1
         # If it doesn't and our line has other words, add the line
         elif line != "":
             strs.append(line)
-            line = ""
+            line = []
             line_w = 0
-        # Otherwise the word doesn't fit in one line so break it up
+        # Otherwise if it is an image, just add it
         elif is_img:
-            strs.append(word)
+            strs.append([word])
+        # If it is a words, break it up
         else:
             wrap = wrap_string(word, font, w)
             # Add all lines except the last one
             for text in wrap[:-1]:
-                strs.append(text)
-            # Check if it is the last word or not
-            if i < len(words) - 1:
-                line = wrap[len(wrap) - 1]
-                line_w = font.size(line)[0]
-            else:
-                strs.append(wrap[len(wrap) - 1])
+                strs.append([text])
+            line = wrap[-1:]
+            line_w = font.size(line[0])[0]
             i += 1
     strs.append(line)
     return strs
